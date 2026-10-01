@@ -18,8 +18,8 @@ API_URL = os.getenv(
 COLUMNS = {
     "kndnr": "Kundennummer",
     "Kunde": "Kunde",
-    "Lieferort": "Lieferort",
     "Lieferortnummer": "Lieferortnummer",
+    "Lieferort": "Lieferort",
     "AnzFahraufträge": "Anzahl Fahraufträge",
 }
 
@@ -67,4 +67,5 @@ st.table(
     hide_index=True,
 )
 st.caption(f"{len(frame):,} Datensätzen".replace(",", "."))
+
 
