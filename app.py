@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import io
 import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -17,8 +16,8 @@ API_URL = os.getenv(
     "http://localhost:6001/api/v1/verspaetete-auftraege-pro-standort/",
 )
 COLUMNS = {
-    "Kunde": "Kunde",
     "kndnr": "Kundennummer",
+    "Kunde": "Kunde",
     "Lieferort": "Lieferort",
     "Lieferortnummer": "Lieferortnummer",
     "AnzFahraufträge": "Anzahl Fahraufträge",
@@ -33,19 +32,6 @@ def fetch_items(url: str) -> list[dict]:
     if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
         raise ValueError("Die API-Antwort enthält keine 'items'-Liste.")
     return payload["items"]
-
-
-def to_excel(frame: pd.DataFrame) -> bytes:
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        frame.to_excel(writer, index=False, sheet_name="Verspätete Aufträge")
-        sheet = writer.sheets["Verspätete Aufträge"]
-        sheet.freeze_panes = "A2"
-        sheet.auto_filter.ref = sheet.dimensions
-        for column in sheet.columns:
-            width = min(65, max(15, *(len(str(cell.value or "")) + 2 for cell in column)))
-            sheet.column_dimensions[column[0].column_letter].width = width
-    return output.getvalue()
 
 
 st.set_page_config(page_title="Verspätete Aufträge pro Standort", layout="wide")
@@ -74,37 +60,11 @@ frame["Kundennummer"] = frame["Kundennummer"].fillna("").astype(str)
 for column in ("Lieferortnummer", "Anzahl Fahraufträge"):
     frame[column] = pd.to_numeric(frame[column], errors="coerce").astype("Int64")
 
-toolbar_left, toolbar_right = st.columns([3, 2], vertical_alignment="bottom")
-with toolbar_left:
-    st.download_button(
-        "Excel-Export",
-        data=to_excel(frame),
-        file_name="verspaetete-auftraege-pro-standort.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        type="primary",
-    )
-with toolbar_right:
-    search = st.text_input("Suchen", placeholder="Kunde, Lieferort oder Nummer suchen")
-
-if search.strip():
-    matches = frame.fillna("").astype(str).apply(
-        lambda column: column.str.contains(search.strip(), case=False, regex=False)
-    )
-    visible = frame.loc[matches.any(axis=1)]
-else:
-    visible = frame
-
-st.dataframe(
-    visible,
+st.table(
+    frame.style.set_properties(**{"text-align": "center"}).set_table_styles(
+        [{"selector": "th", "props": [("text-align", "center")]}]
+    ),
     hide_index=True,
-    use_container_width=True,
-    height=min(720, max(180, (len(visible) + 1) * 35)),
-    column_config={
-        "Kundennummer": st.column_config.TextColumn("Kundennummer", width="small"),
-        "Kunde": st.column_config.TextColumn("Kunde", width="medium"),
-        "Lieferort": st.column_config.TextColumn("Lieferort", width="large"),
-        "Lieferortnummer": st.column_config.NumberColumn("Lieferortnummer", format="%d"),
-        "Anzahl Fahraufträge": st.column_config.NumberColumn("Anzahl Fahraufträge", format="%d"),
-    },
 )
-st.caption(f"{len(visible):,} von {len(frame):,} Datensätzen".replace(",", "."))
+st.caption(f"{len(frame):,} Datensätzen".replace(",", "."))
+
