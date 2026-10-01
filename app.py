@@ -38,9 +38,9 @@ st.set_page_config(page_title="Verspätete Aufträge pro Standort", layout="wide
 st.markdown(
     """
     <style>
-    .block-container { max-width: none; padding: 1.5rem 1rem 2rem; }
+    [data-testid="stMainBlockContainer"] { max-width: none; padding: 0.25rem 1rem 2rem !important; }
     .report-bar { background: #0b4036; color: white; padding: 1rem 1.4rem;
-                  font-weight: 700; font-size: 1.1rem; margin: -1.5rem -1rem 1.8rem; }
+                  font-weight: 700; font-size: 1.1rem; margin: -0.25rem -1rem 0.6rem; }
     h1 { text-align: center; font-weight: 400; font-size: 2rem; margin-bottom: 1.5rem; }
     </style>
     <div class="report-bar">KNETTENBRECH GURDULIC</div>
@@ -77,6 +77,7 @@ st.html(
     + "</div>"
 )
 st.caption(f"{len(frame):,} Datensätzen".replace(",", "."))
+
 
 
 
