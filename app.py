@@ -60,12 +60,24 @@ frame["Kundennummer"] = frame["Kundennummer"].fillna("").astype(str)
 for column in ("Lieferortnummer", "Anzahl Fahraufträge"):
     frame[column] = pd.to_numeric(frame[column], errors="coerce").astype("Int64")
 
-st.table(
-    frame.style.set_properties(**{"text-align": "center"}).set_table_styles(
-        [{"selector": "th", "props": [("text-align", "center")]}]
-    ),
-    hide_index=True,
+table_html = frame.to_html(index=False, classes="report-table", border=0, escape=True)
+st.html(
+    """
+    <style>
+    .report-table-wrap { overflow-x: auto; }
+    .report-table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 0.85rem; }
+    .report-table th, .report-table td { border: 1px solid #e3e7e5; padding: 0.4rem 0.5rem; }
+    .report-table th { color: #68767b; font-weight: 400; text-align: left !important; }
+    .report-table td { text-align: left; }
+    .report-table td:nth-child(3), .report-table td:nth-child(5) { text-align: center !important; }
+    </style>
+    <div class="report-table-wrap">
+    """
+    + table_html
+    + "</div>"
 )
 st.caption(f"{len(frame):,} Datensätzen".replace(",", "."))
+
+
 
 
